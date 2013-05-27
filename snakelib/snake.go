@@ -29,9 +29,12 @@ type Snake struct {
 	head_dir Direction
 }
 
-func NewSnake() *Snake {
+func NewSnake( pos IntPos, length int ) *Snake {
 	var s Snake
-	s.body = []IntPos{ {10, 10}, {11, 10}, {12, 10}, {12, 11} }
+	s.body = make( []IntPos, length )
+	for i := range( s.body ) {
+		s.body[ i ] = pos
+	}
 	return &s
 }
 

@@ -13,7 +13,7 @@ func main() {
 	}
 	defer termbox.Close()
 
-	snake := snakelib.NewSnake()
+	snake := snakelib.NewSnake( snakelib.IntPos{ 10, 10 }, 30 )
 	done := false
 
 	go func() {
