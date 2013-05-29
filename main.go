@@ -32,12 +32,15 @@ func main() {
 		}
 	}()
 
+	level_map := snakelib.NewEmptyMap( snakelib.IntPos { 100, 100 })
+
 	for ; !done ; {
-		snake.Update()
+		snake.Update( level_map )
+		level_map.DrawCentered( snake.HeadPos() )
 		
 		if termbox.Flush() != nil {
 			break
 		}
-		time.Sleep( time.Millisecond * 100 )
+		time.Sleep( time.Millisecond * 50 )
 	}
 }

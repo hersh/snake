@@ -1,15 +1,43 @@
 package snakelib
 
-import (
-	"github.com/nsf/termbox-go"
-)
+// import "github.com/nsf/termbox-go"
 
 type IntPos struct {
 	X, Y int
 }
 
-func (p IntPos) plus( q IntPos ) IntPos {
+func (p IntPos) Plus( q IntPos ) IntPos {
 	return IntPos { p.X + q.X, p.Y + q.Y }
+}
+
+func (p IntPos) Minus( q IntPos ) IntPos {
+	return IntPos { p.X - q.X, p.Y - q.Y }
+}
+
+func (p IntPos) Div( divisor int ) IntPos {
+	return IntPos { p.X / divisor, p.Y / divisor }
+}
+
+func (p IntPos) LowerBound( bound IntPos ) IntPos {
+	result := p
+	if result.X < bound.X {
+		result.X = bound.X
+	}
+	if result.Y < bound.Y {
+		result.Y = bound.Y
+	}
+	return result
+}
+
+func (p IntPos) UpperBound( bound IntPos ) IntPos {
+	result := p
+	if result.X > bound.X {
+		result.X = bound.X
+	}
+	if result.Y > bound.Y {
+		result.Y = bound.Y
+	}
+	return result
 }
 
 type Direction int8
@@ -38,16 +66,20 @@ func NewSnake( pos IntPos, length int ) *Snake {
 	return &s
 }
 
-func (s *Snake) Update() {
+func (s *Snake) HeadPos() IntPos {
+	return s.body[ len( s.body ) - 1 ]
+}
+
+func (s *Snake) Update( m *Map ) {
 	pos := s.body[ 0 ]
-	termbox.SetCell( pos.X, pos.Y, ' ', termbox.ColorWhite, termbox.ColorBlack )
+	m.SetCell( pos, ' ' )
 	var i int
 	for i = 1; i < len( s.body ); i++ {
 		s.body[ i - 1 ] = s.body[ i ]
 	}
-	pos = s.body[ i-1 ].plus( motions[ s.head_dir ])
+	pos = s.body[ i-1 ].Plus( motions[ s.head_dir ])
 	s.body[ i-1 ] = pos
-	termbox.SetCell( pos.X, pos.Y, '@', termbox.ColorWhite, termbox.ColorBlack )
+	m.SetCell( pos, '@' )
 }
 
 func (s *Snake) Turn( dir_change int ) {
