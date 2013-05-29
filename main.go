@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/nsf/termbox-go"
+	"math/rand"
 	"time"
 	"snake/snakelib"
 )
@@ -32,7 +33,13 @@ func main() {
 		}
 	}()
 
-	level_map := snakelib.NewEmptyMap( snakelib.IntPos { 100, 100 })
+	width := 300
+	height := 150
+	level_map := snakelib.NewEmptyMap( snakelib.IntPos { width, height })
+	for i := 0; i < 30; i++ {
+		apple_pos := snakelib.IntPos{ rand.Intn( width - 2 ) + 1, rand.Intn( height - 2 ) + 1 }
+		level_map.SetCell( apple_pos, '*' )
+	}
 
 	for ; !done ; {
 		snake.Update( level_map )
@@ -41,6 +48,6 @@ func main() {
 		if termbox.Flush() != nil {
 			break
 		}
-		time.Sleep( time.Millisecond * 50 )
+		time.Sleep( time.Millisecond * 100 )
 	}
 }

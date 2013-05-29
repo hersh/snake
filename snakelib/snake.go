@@ -71,15 +71,32 @@ func (s *Snake) HeadPos() IntPos {
 }
 
 func (s *Snake) Update( m *Map ) {
+
+	new_pos := s.body[ len(s.body)-1 ].Plus( motions[ s.head_dir ])
+	switch m.GetCell( new_pos ) {
+	case '#', '@':
+		return
+	case '*':
+		s.Grow( 5 )
+	}
+
 	pos := s.body[ 0 ]
 	m.SetCell( pos, ' ' )
 	var i int
 	for i = 1; i < len( s.body ); i++ {
 		s.body[ i - 1 ] = s.body[ i ]
 	}
-	pos = s.body[ i-1 ].Plus( motions[ s.head_dir ])
-	s.body[ i-1 ] = pos
-	m.SetCell( pos, '@' )
+	s.body[ i-1 ] = new_pos
+	m.SetCell( new_pos, '@' )
+}
+
+func (s *Snake) Grow( length_change int ) {
+	new_body := make([]IntPos, len( s.body ) + length_change)
+	for i := 0; i < length_change; i++ {
+		new_body[ i ] = s.body[ 0 ]
+	}
+	copy( new_body[ length_change: ], s.body )
+	s.body = new_body
 }
 
 func (s *Snake) Turn( dir_change int ) {
