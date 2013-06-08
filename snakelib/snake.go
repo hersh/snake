@@ -108,3 +108,7 @@ func (s *Snake) Turn( dir_change int ) {
 	}
 	s.head_dir = new_dir
 }
+
+func (s *Snake) SetDir( new_dir Direction ) {
+	s.head_dir = new_dir
+}
