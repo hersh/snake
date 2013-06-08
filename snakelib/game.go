@@ -3,14 +3,13 @@ package snakelib
 import (
 	"github.com/nsf/termbox-go"
 	"fmt"
-	"math/rand"
 	"time"
 )
 
 type Game struct {
         dir string
 	current_level_num, score int
-//	current_level Level
+	current_level *Level
 }
 
 func LoadNewGame( game_dir string ) *Game {
@@ -44,9 +43,10 @@ func (game *Game) Run() {
 	}
 	defer termbox.Close()
 
-	snake := NewSnake( IntPos{ 10, 10 }, 30 )
-	done := false
+	game.current_level = NewLevel( game )
+	snake := game.current_level.GetPlayerSnake()
 
+	done := false
 	go func() {
 		for {
 			event := termbox.PollEvent()
@@ -67,18 +67,12 @@ func (game *Game) Run() {
 		}
 	}()
 
-	width := 300
-	height := 150
-	level_map := NewEmptyMap( IntPos { width, height })
-	for i := 0; i < 30; i++ {
-		apple_pos := IntPos{ rand.Intn( width - 2 ) + 1, rand.Intn( height - 2 ) + 1 }
-		level_map.SetCell( apple_pos, '*' )
-	}
-
 	for ; !done ; {
-		snake.Update( level_map )
-		level_map.DrawCentered( snake.HeadPos() )
-		
+		snake.Update( game, game.current_level._map )
+		game.current_level._map.DrawCentered( snake.HeadPos() )
+		game.DrawState()
+		game.current_level.DrawState()
+
 		if termbox.Flush() != nil {
 			break
 		}
