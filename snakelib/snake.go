@@ -70,17 +70,12 @@ func (s *Snake) HeadPos() IntPos {
 	return s.body[ len( s.body ) - 1 ]
 }
 
-func (s *Snake) Update( game *Game, m *Map ) {
+func (s *Snake) NextPos() IntPos {
+	return s.body[ len(s.body)-1 ].Plus( motions[ s.head_dir ])
+}
 
-	new_pos := s.body[ len(s.body)-1 ].Plus( motions[ s.head_dir ])
-	switch m.GetCell( new_pos ) {
-	case '#', '@':
-		game.AddScore( -10 )
-		return
-	case '*':
-		game.AddScore( 5 )
-		s.Grow( 5 )
-	}
+func (s *Snake) Advance( m *Map ) {
+	new_pos := s.NextPos()
 
 	pos := s.body[ 0 ]
 	m.SetCell( pos, ' ' )

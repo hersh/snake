@@ -3,7 +3,6 @@ package snakelib
 import (
 	"github.com/nsf/termbox-go"
 	"fmt"
-	"time"
 )
 
 type Game struct {
@@ -43,40 +42,16 @@ func (game *Game) Run() {
 	}
 	defer termbox.Close()
 
+	// while show-intro-screen() != quit:
+	//   level_num = 0
+	//   winning = true
+	//   while winning
+	//     level = loadlevel( level_num )
+        //     winning = level.run()
+	//   if show-high-scores() == quit
+	//     return
+
 	game.current_level = NewLevel( game )
-	snake := game.current_level.GetPlayerSnake()
-
-	done := false
-	go func() {
-		for {
-			event := termbox.PollEvent()
-			if event.Type == termbox.EventKey {
-				switch event.Ch {
-				case 'q':
-					done = true
-				case 'l':
-					snake.SetDir( Right )
-				case 'j':
-					snake.SetDir( Left )
-				case 'k':
-					snake.SetDir( Down )
-				case 'i':
-					snake.SetDir( Up )
-				}
-			}
-		}
-	}()
-
-	for ; !done ; {
-		snake.Update( game, game.current_level._map )
-		game.current_level._map.DrawCentered( snake.HeadPos() )
-		game.DrawState()
-		game.current_level.DrawState()
-
-		if termbox.Flush() != nil {
-			break
-		}
-		time.Sleep( time.Millisecond * 100 )
-	}
+	game.current_level.Run()
 }
 
