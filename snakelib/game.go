@@ -3,6 +3,7 @@ package snakelib
 import (
 	"github.com/nsf/termbox-go"
 	"fmt"
+	"time"
 )
 
 type Game struct {
@@ -25,14 +26,52 @@ func (g *Game) AddScore( amount int ) {
 
 func (g *Game) DrawState() {
 	state := fmt.Sprintf( "Score: %d, Level %d", g.score, g.current_level_num )
-	g.DrawString( 0, 0, state )
+	DrawString( 0, 0, state )
 }
 
-func (g *Game) DrawString( x, y int, str string ) {
+func DrawString( x, y int, str string ) {
 	runes := []rune( str )
 	for i := 0; i < len( runes ); i++ {
 		termbox.SetCell( x + i, y, runes[ i ], termbox.ColorWhite, termbox.ColorBlack )
 	}
+}
+
+func DrawCentered( x, y int, str string ) {
+	DrawString( x - len( str ) / 2, y, str )
+}
+
+func ShowIntroScreen() Result {
+	width, height := termbox.Size()
+	x := width / 2
+	y := height / 2 - 5
+	DrawCentered( x, y, "Welcome to GoSnake!" )
+	y++
+	DrawCentered( x, y, "    I    " ); y++
+	DrawCentered( x, y, "    ^    " ); y++
+	DrawCentered( x, y, "J <   > L" ); y++
+	DrawCentered( x, y, "    v    " ); y++
+	DrawCentered( x, y, "    K    " ); y++
+	y++
+	DrawCentered( x, y, "Press Q to quit," ); y++
+	y++
+	DrawCentered( x, y, "Any other key to start." ); y++
+
+	if termbox.Flush() != nil {
+		return Quit
+	}
+	for {
+		event := termbox.PollEvent()
+		if event.Type == termbox.EventKey {
+			switch event.Ch {
+			case 'q':
+				return Quit
+			default:
+				return Start
+			}
+		}
+		time.Sleep( time.Millisecond * 100 )
+	}
+	return Start
 }
 
 func (game *Game) Run() {
@@ -42,16 +81,22 @@ func (game *Game) Run() {
 	}
 	defer termbox.Close()
 
-	// while show-intro-screen() != quit:
-	//   level_num = 0
-	//   winning = true
-	//   while winning
-	//     level = loadlevel( level_num )
-        //     winning = level.run()
-	//   if show-high-scores() == quit
-	//     return
-
-	game.current_level = NewLevel( game )
-	game.current_level.Run()
+	for ; ShowIntroScreen() == Start; {
+		game.current_level_num = 1
+		winning := true
+		for ; winning; {
+			game.current_level = NewLevel( game )
+			switch game.current_level.Run() {
+			case Win:
+				game.current_level_num++
+			case Lose:
+				winning = false
+			case Quit:
+				return
+			}
+		}
+		//   if show-high-scores() == quit
+		//     return
+	}
 }
 

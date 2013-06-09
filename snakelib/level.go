@@ -7,12 +7,13 @@ import (
 	"time"
 )
 
-type LevelResult int8
+type Result int8
 
 const (
-	Win LevelResult = iota
+	Win Result = iota
 	Lose
 	Quit
+	Start
 )
 
 type Level struct {
@@ -30,10 +31,10 @@ func NewLevel( game *Game ) *Level {
 	l.player_snake = NewSnake( IntPos{ 10, 10 }, 30 )
 	l.allowed_duration = 100 * time.Second
 	l.end_time = time.Now().Add( l.allowed_duration )
-	width := 150
-	height := 80
+	width := 80
+	height := 40
 	l._map = NewEmptyMap( IntPos { width, height })
-	l.apples_remaining = 20
+	l.apples_remaining = 10
 	for i := 0; i < l.apples_remaining; i++ {
 		apple_pos := IntPos{ rand.Intn( width - 2 ) + 1, rand.Intn( height - 2 ) + 1 }
 		l._map.SetCell( apple_pos, '*' )
@@ -42,7 +43,7 @@ func NewLevel( game *Game ) *Level {
 	return &l
 }
 
-func (level *Level) Run() LevelResult {
+func (level *Level) Run() Result {
 	snake := level.player_snake
 
 	quit := false
@@ -118,6 +119,6 @@ func (l *Level) DrawState() {
 	state := fmt.Sprintf( "Apples: %d Time: %02d:%02d",
 		l.apples_remaining, minutes, seconds )
 	screen_width, _ := termbox.Size()
-	l.game.DrawString( screen_width - len( state ), 0, state )
+	DrawString( screen_width - len( state ), 0, state )
 }
 
