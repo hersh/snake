@@ -3,6 +3,7 @@ package snakelib
 import (
 	"github.com/nsf/termbox-go"
 	"fmt"
+	"path/filepath"
 	"time"
 )
 
@@ -10,6 +11,7 @@ type Game struct {
         dir string
 	current_level_num, score int
 	current_level *Level
+	level_files []string
 }
 
 func LoadNewGame( game_dir string ) *Game {
@@ -17,6 +19,16 @@ func LoadNewGame( game_dir string ) *Game {
 	game.dir = game_dir
 	game.current_level_num = 0
 	game.score = 0
+
+	var err error
+	game.level_files, err = filepath.Glob( filepath.Join( game.dir, "*.snake" ))
+	if( err != nil ) {
+		panic( err )
+	}
+	if( len( game.level_files ) == 0 ) {
+		panic( fmt.Sprintf( "Could not find any '*.snake' files in game dir '%s'", game.dir ))
+	}
+
 	return &game
 }
 
@@ -74,23 +86,51 @@ func ShowIntroScreen() Result {
 	return Start
 }
 
+func (game *Game) ShowWinScreen() {
+	width, height := termbox.Size()
+	x := width / 2
+	y := height / 2
+
+	DrawCentered( x, y, "You win!" )
+
+	if termbox.Flush() != nil {
+		return
+	}
+	for {
+		event := termbox.PollEvent()
+		if event.Type == termbox.EventKey {
+			return
+		}
+		time.Sleep( time.Millisecond * 100 )
+	}
+}
+
 func (game *Game) Run() {
 	err := termbox.Init()
 	if err != nil {
-		panic(err)
+		panic( err )
 	}
 	defer termbox.Close()
 
 	for ; ShowIntroScreen() == Start; {
 		game.current_level_num = 1
-		winning := true
-		for ; winning; {
-			game.current_level = NewLevel( game )
+		playing := true
+		for ; playing; {
+			var err error
+			game.current_level, err = LoadNewLevel( game, game.level_files[ game.current_level_num ])
+			if err != nil {
+				panic( err )
+			}
+			// game.current_level = NewLevel( game )
 			switch game.current_level.Run() {
 			case Win:
 				game.current_level_num++
+				if game.current_level_num >= len( game.level_files ) {
+					game.ShowWinScreen()
+					playing = false
+				}
 			case Lose:
-				winning = false
+				playing = false
 			case Quit:
 				return
 			}

@@ -39,8 +39,25 @@ func NewLevel( game *Game ) *Level {
 		apple_pos := IntPos{ rand.Intn( width - 2 ) + 1, rand.Intn( height - 2 ) + 1 }
 		l._map.SetCell( apple_pos, '*' )
 	}
+	l.apples_remaining = l._map.Count( '*' )
 
 	return &l
+}
+
+func LoadNewLevel( game *Game, file string ) (*Level, error) {
+	var l Level
+	l.game = game
+	l.player_snake = NewSnake( IntPos{ 10, 10 }, 30 )
+	l.allowed_duration = 100 * time.Second
+	l.end_time = time.Now().Add( l.allowed_duration )
+	var err error
+	l._map, err = LoadNewMap( file )
+	if err != nil {
+		return nil, err
+	}
+	l.apples_remaining = l._map.Count( '*' )
+
+	return &l, nil
 }
 
 func (level *Level) Run() Result {
@@ -87,8 +104,8 @@ func (level *Level) Run() Result {
 		case '*':
 			level.game.AddScore( 5 )
 			snake.Grow( 5 )
-			level.apples_remaining--
-			if level.apples_remaining <= 0 {
+			level.apples_remaining = level._map.Count( '*' ) - 1
+			if level.apples_remaining == 0 {
 				return Win
 			}
 			stopped = false

@@ -15,11 +15,12 @@ func TestUpdate( t* testing.T ) {
 		t.Errorf( "s.head_dir should default to Right, but is %d.\n", s.head_dir );
 	}
 
+	m := NewEmptyMap( IntPos{ 10, 10 })
 	s.body = []IntPos {{1, 1}, {2,2}}
-	s.Update()
+	s.Advance( m )
 	testPos( t, "t1 body[0]", IntPos{2,2}, s.body[0] );
 	testPos( t, "t1 body[1]", IntPos{3,2}, s.body[1] );
-	s.Update()
+	s.Advance( m )
 	testPos( t, "t2 body[0]", IntPos{3,2}, s.body[0] );
 	testPos( t, "t2 body[1]", IntPos{4,2}, s.body[1] );
 

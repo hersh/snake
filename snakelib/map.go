@@ -1,10 +1,56 @@
 package snakelib
 
-import "github.com/nsf/termbox-go"
+import (
+//	"fmt"
+	"github.com/nsf/termbox-go"
+	"io/ioutil"
+	"strings"
+)
 
 type Map struct {
 	contents []rune
 	size IntPos
+}
+
+func LoadNewMap( filename string ) (*Map, error) {
+	var m Map
+
+	content, err := ioutil.ReadFile( filename )
+	if err != nil {
+		return nil, err
+	}
+	lines := strings.Split( string( content ), "\n" )
+
+	maxlen := 0
+	for _, line := range lines {
+		len_line := len( line )
+		if len_line > maxlen {
+			maxlen = len_line
+		}
+	}
+
+	m.size.Y = len( lines )
+	m.size.X = maxlen
+//	termbox.Close()
+//	fmt.Printf( "width: %d, height: %d\n", m.size.X, m.size.Y )
+	m.contents = make( []rune, m.size.Y * m.size.X )
+
+	map_index := 0
+	for _, line := range lines {
+		var x int
+		var ch rune
+		for x, ch = range line {
+			m.contents[ map_index ] = ch
+			map_index++
+		}
+//		fmt.Printf( "y %d, x %d, map_index %d\n", y, x, map_index )
+		for x++; x < maxlen; x++ {
+			m.contents[ map_index ] = ' '
+			map_index++
+		}
+	}
+
+	return &m, nil
 }
 
 func NewEmptyMap( size IntPos ) *Map {
@@ -26,6 +72,16 @@ func NewEmptyMap( size IntPos ) *Map {
 	}
 
 	return &m
+}
+
+func (m *Map) Count( target_char rune ) int {
+	count := 0
+	for _, ch := range( m.contents ) {
+		if ch == target_char {
+			count++
+		}
+	}
+	return count
 }
 
 func (m *Map) SetCell( pos IntPos, ch rune ) {
