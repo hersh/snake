@@ -4,6 +4,7 @@ import (
 	"github.com/nsf/termbox-go"
 	"fmt"
 	"path/filepath"
+	"sort"
 	"time"
 )
 
@@ -28,6 +29,7 @@ func LoadNewGame( game_dir string ) *Game {
 	if( len( game.level_files ) == 0 ) {
 		panic( fmt.Sprintf( "Could not find any '*.snake' files in game dir '%s'", game.dir ))
 	}
+	sort.Strings( game.level_files )
 
 	return &game
 }
@@ -37,7 +39,7 @@ func (g *Game) AddScore( amount int ) {
 }
 
 func (g *Game) DrawState() {
-	state := fmt.Sprintf( "Score: %d, Level %d", g.score, g.current_level_num )
+	state := fmt.Sprintf( "Score: %d, Level %d", g.score, 1 + g.current_level_num )
 	DrawString( 0, 0, state )
 }
 
@@ -113,7 +115,7 @@ func (game *Game) Run() {
 	defer termbox.Close()
 
 	for ; ShowIntroScreen() == Start; {
-		game.current_level_num = 1
+		game.current_level_num = 0
 		playing := true
 		for ; playing; {
 			var err error

@@ -1,7 +1,8 @@
 package snakelib
 
 import (
-//	"fmt"
+	"fmt"
+	"errors"
 	"github.com/nsf/termbox-go"
 	"io/ioutil"
 	"strings"
@@ -10,6 +11,7 @@ import (
 type Map struct {
 	contents []rune
 	size IntPos
+	filename string
 }
 
 func LoadNewMap( filename string ) (*Map, error) {
@@ -50,11 +52,13 @@ func LoadNewMap( filename string ) (*Map, error) {
 		}
 	}
 
+	m.filename = filename
 	return &m, nil
 }
 
 func NewEmptyMap( size IntPos ) *Map {
 	var m Map
+	m.filename = "no file"
 	m.size = size
 	m.contents = make( []rune, size.X * size.Y )
 
@@ -82,6 +86,15 @@ func (m *Map) Count( target_char rune ) int {
 		}
 	}
 	return count
+}
+
+func (m *Map) Find( target_char rune ) (IntPos, error) {
+	for index, ch := range( m.contents ) {
+		if ch == target_char {
+			return IntPos{ index % m.size.X, index / m.size.X }, nil
+		}
+	}
+	return IntPos{0,0}, errors.New( fmt.Sprintf( "Rune '%c' not found in map file '%s'.", target_char, m.filename ));
 }
 
 func (m *Map) SetCell( pos IntPos, ch rune ) {

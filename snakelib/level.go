@@ -47,7 +47,6 @@ func NewLevel( game *Game ) *Level {
 func LoadNewLevel( game *Game, file string ) (*Level, error) {
 	var l Level
 	l.game = game
-	l.player_snake = NewSnake( IntPos{ 10, 10 }, 30 )
 	l.allowed_duration = 100 * time.Second
 	l.end_time = time.Now().Add( l.allowed_duration )
 	var err error
@@ -56,7 +55,11 @@ func LoadNewLevel( game *Game, file string ) (*Level, error) {
 		return nil, err
 	}
 	l.apples_remaining = l._map.Count( '*' )
-
+	snake_start, err := l._map.Find( '@' )
+	if err != nil {
+		return nil, err
+	}
+	l.player_snake = NewSnake( snake_start, 30 )
 	return &l, nil
 }
 
