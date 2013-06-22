@@ -1,11 +1,10 @@
 package snakelib
 
 import (
-	"fmt"
+	"bufio"
 	"errors"
+	"fmt"
 	"github.com/nsf/termbox-go"
-	"io/ioutil"
-	"strings"
 )
 
 type Map struct {
@@ -14,21 +13,21 @@ type Map struct {
 	filename string
 }
 
-func LoadNewMap( filename string ) (*Map, error) {
+func LoadNewMap( scanner *bufio.Scanner, filename string ) (*Map, error) {
 	var m Map
 
-	content, err := ioutil.ReadFile( filename )
-	if err != nil {
-		return nil, err
-	}
-	lines := strings.Split( string( content ), "\n" )
-
+	lines := make( []string, 0, 100 )
 	maxlen := 0
-	for _, line := range lines {
+	for scanner.Scan() {
+		line := scanner.Text()
+		lines = append( lines, line )
 		len_line := len( line )
 		if len_line > maxlen {
 			maxlen = len_line
 		}
+	}
+	if err := scanner.Err(); err != nil {
+		return nil, err
 	}
 
 	m.size.Y = len( lines )

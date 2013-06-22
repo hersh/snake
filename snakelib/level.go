@@ -1,9 +1,14 @@
 package snakelib
 
 import (
+	"bufio"
+	"errors"
 	"fmt"
 	"github.com/nsf/termbox-go"
 	"math/rand"
+	"os"
+	"strconv"
+	"strings"
 	"time"
 )
 
@@ -44,13 +49,51 @@ func NewLevel( game *Game ) *Level {
 	return &l
 }
 
-func LoadNewLevel( game *Game, file string ) (*Level, error) {
+func valuesFromLevelFile( scanner *bufio.Scanner, filename string ) (map[string] string, error) {
+
+	values := make( map[string] string )
+
+	for scanner.Scan() {
+		line := scanner.Text()
+		nameval := strings.Split( line, ":" )
+		if len( nameval ) == 2 {
+			name := strings.TrimSpace( nameval[ 0 ])
+			value := strings.TrimSpace( nameval[ 1 ])
+			values[ name ] = value
+		}
+		if line == "map:" {
+			return values, nil
+		}
+	}
+	if err := scanner.Err(); err != nil {
+		return nil, err
+	}
+	return nil, errors.New( fmt.Sprintf( "'map:' key not found in level file '%s'", filename ))
+}
+
+func LoadNewLevel( game *Game, filename string ) (*Level, error) {
 	var l Level
 	l.game = game
-	l.allowed_duration = 100 * time.Second
+	
+	file, err := os.Open( filename )
+	if err != nil {
+		return nil, err
+	}
+	scanner := bufio.NewScanner( file )
+	values, err := valuesFromLevelFile( scanner, filename )
+	if err != nil {
+		return nil, err
+	}
+
+	seconds, err := strconv.Atoi( values[ "time" ])
+	if err != nil {
+		return nil, err
+	}
+
+	l.allowed_duration = time.Duration( seconds ) * time.Second
 	l.end_time = time.Now().Add( l.allowed_duration )
-	var err error
-	l._map, err = LoadNewMap( file )
+
+	l._map, err = LoadNewMap( scanner, filename )
 	if err != nil {
 		return nil, err
 	}
@@ -59,7 +102,11 @@ func LoadNewLevel( game *Game, file string ) (*Level, error) {
 	if err != nil {
 		return nil, err
 	}
-	l.player_snake = NewSnake( snake_start, 30 )
+	snake_len, err := strconv.Atoi( values[ "snake len" ])
+	if err != nil {
+		return nil, err
+	}
+	l.player_snake = NewSnake( snake_start, snake_len )
 	return &l, nil
 }
 
