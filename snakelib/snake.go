@@ -18,6 +18,15 @@ func (p IntPos) Div( divisor int ) IntPos {
 	return IntPos { p.X / divisor, p.Y / divisor }
 }
 
+func (p IntPos) Mult( factor int ) IntPos {
+	return IntPos { p.X * factor, p.Y * factor }
+}
+
+// Return the position "count" steps from p in direction "dir".
+func (p IntPos) PlusDir( dir Direction, count int ) IntPos {
+	return p.Plus( motions[ dir ].Mult( count ))
+}
+
 func (p IntPos) LowerBound( bound IntPos ) IntPos {
 	result := p
 	if result.X < bound.X {

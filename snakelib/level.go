@@ -110,6 +110,10 @@ func LoadNewLevel( game *Game, filename string ) (*Level, error) {
 	return &l, nil
 }
 
+func isStopper( r rune ) bool {
+	return r == '#' || r == '@'
+}
+
 func (level *Level) Run() Result {
 	snake := level.player_snake
 
@@ -145,13 +149,21 @@ func (level *Level) Run() Result {
 			return Lose
 		}
 
-		switch level._map.GetCell( snake.NextPos() ) {
-		case '#', '@':
+		ch := level._map.GetCell( snake.NextPos() )
+		switch {
+		case isStopper( ch ):
 			if !stopped {
 				level.game.AddScore( -10 )
 				stopped = true
+				if isStopper( level._map.GetCell( snake.HeadPos().PlusDir( Down, 1 ))) &&
+					isStopper( level._map.GetCell( snake.HeadPos().PlusDir( Up, 1 ))) &&
+					isStopper( level._map.GetCell( snake.HeadPos().PlusDir( Left, 1 ))) &&
+					isStopper( level._map.GetCell( snake.HeadPos().PlusDir( Right, 1 ))) {
+
+					return Lose
+				}
 			}
-		case '*':
+		case ch == '*':
 			level.game.AddScore( 5 )
 			snake.Grow( 5 )
 			level.apples_remaining = level._map.Count( '*' ) - 1
