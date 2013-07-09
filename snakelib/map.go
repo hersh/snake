@@ -13,6 +13,10 @@ type Map struct {
 	filename string
 }
 
+func (m *Map) GetSize() IntPos {
+	return m.size
+}
+
 func LoadNewMap( scanner *bufio.Scanner, filename string ) (*Map, error) {
 	var m Map
 
