@@ -17,6 +17,11 @@ func (m *Map) GetSize() IntPos {
 	return m.size
 }
 
+func (m *Map) PosValid( pos IntPos ) bool {
+	return 0 <= pos.X && pos.X < m.size.X &&
+		0 <= pos.Y && pos.Y < m.size.Y
+}
+
 func LoadNewMap( scanner *bufio.Scanner, filename string ) (*Map, error) {
 	var m Map
 

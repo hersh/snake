@@ -1,7 +1,8 @@
 package snakelib
 
 import (
-	"io/ioutil"
+	"bufio"
+	"strings"
 	"testing"
 )
 
@@ -13,7 +14,30 @@ func testCell( t *testing.T, m *Map, x, y int, expected rune ) {
 	}
 }
 
-func TestNewEmptyMap( t* testing.T ) {
+func TestPosValid( t *testing.T ) {
+	var m Map
+	m.size = IntPos{ 2, 3 }
+	if true != m.PosValid( IntPos{ 1, 2 } ) {
+		t.Errorf( "1,2 should be a valid position, but PosValid() says it is not.\n" )
+	}
+	if true != m.PosValid( IntPos{ 0, 2 } ) {
+		t.Errorf( "0,2 should be a valid position, but PosValid() says it is not.\n" )
+	}
+	if false != m.PosValid( IntPos{ -1, 2 } ) {
+		t.Errorf( "-1,2 should be an invalid position, but PosValid() says it is valid.\n" )
+	}
+	if false != m.PosValid( IntPos{ 2, 2 } ) {
+		t.Errorf( "2,2 should be an invalid position, but PosValid() says it is valid.\n" )
+	}
+	if false != m.PosValid( IntPos{ 1, 3 } ) {
+		t.Errorf( "1,3 should be an invalid position, but PosValid() says it is valid.\n" )
+	}
+	if false != m.PosValid( IntPos{ 1, -1 } ) {
+		t.Errorf( "1,-1 should be an invalid position, but PosValid() says it is valid.\n" )
+	}
+}
+
+func TestNewEmptyMap( t *testing.T ) {
 	m := NewEmptyMap( IntPos{ 4, 3 })
 	testCell( t, m, 0, 0, '#' )
 	testCell( t, m, 0, 1, '#' )
@@ -30,15 +54,10 @@ func TestLoadMap( t* testing.T ) {
 # @ #
 #   #
 #####`
-	file, err := ioutil.TempFile( "", "" )
-	if err != nil {
-		t.Errorf( "Failed to create tempfile.\n" )
-		return
-	}
-	file.WriteString( mapstr )
-	file.Close()
+	reader := strings.NewReader( mapstr )
+	scanner := bufio.NewScanner( reader )
 
-	m, err := LoadNewMap( file.Name() )
+	m, err := LoadNewMap( scanner, "test_map" )
 	if err != nil {
 		t.Errorf( "Failed to load test map: %v", err )
 	}

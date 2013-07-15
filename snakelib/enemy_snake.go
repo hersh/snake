@@ -1,7 +1,7 @@
 package snakelib
 
 import (
-	"rand"
+//	"math/rand"
 )
 
 type EnemySnake struct {
@@ -10,6 +10,7 @@ type EnemySnake struct {
 }
 
 func (es *EnemySnake) update( _map *Map ) {
+/*
 	new_dir, err = es.DirTowardNearest( _map, es.HeadPos(), '*' )
 	if err == nil {
 		es.SetDir( new_dir )
@@ -17,4 +18,5 @@ func (es *EnemySnake) update( _map *Map ) {
 		es.Turn( rand.Intn( 4 ))
 	}
 	es.Advance( _map )
+*/
 }
