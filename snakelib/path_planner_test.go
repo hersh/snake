@@ -64,3 +64,48 @@ func TestDistanceMapSimple( t* testing.T ) {
 		-1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
 	} )
 }
+
+func TestDirTowardsNearest1( t* testing.T ) {
+	mapstr :=
+`##########
+#  #  *  #
+#  #  #  #
+# @   #  #
+#  ####  #
+#   *    #
+#       *#
+##########`
+
+	reader := strings.NewReader( mapstr )
+	scanner := bufio.NewScanner( reader )
+
+	_map, err := LoadNewMap( scanner, "test_map" )
+	if err != nil {
+		t.Errorf( "Failed to load test map: %v", err )
+	}
+
+	pp := new( PathPlanner )
+	dir, err := pp.DirTowardsNearest( _map, IntPos{ 2, 3 }, '*' )
+	if Down != dir {
+		t.Errorf( "Direction towards nearest should be Down (3), not %d.\n", int( dir ))
+	}
+}
+
+func TestDirTowardsNearest2( t* testing.T ) {
+	mapstr := "*@ *"
+
+	reader := strings.NewReader( mapstr )
+	scanner := bufio.NewScanner( reader )
+
+	_map, err := LoadNewMap( scanner, "test_map" )
+	if err != nil {
+		t.Errorf( "Failed to load test map: %v", err )
+	}
+
+	pp := new( PathPlanner )
+	dir, err := pp.DirTowardsNearest( _map, IntPos{ 1, 0 }, '*' )
+	if Left != dir {
+		t.Errorf( "Direction towards nearest should be Left (2), not %d.\n", int( dir ))
+	}
+	
+}

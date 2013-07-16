@@ -1,6 +1,7 @@
 package snakelib
 
 import (
+	"errors"
 	"fmt"
 )
 
@@ -88,7 +89,44 @@ func (pp *PathPlanner) fillDistanceMap( _map *Map, start IntPos, target rune ) {
 			}
 		}	
 	}
-
-	// walk back down the distance field
 }
 
+func (pp *PathPlanner) DirTowardsNearest( _map *Map, start IntPos, target rune ) ( Direction, error ) {
+	// First, fill the distance map from the start
+	pp.fillDistanceMap( _map, start, target )
+
+	// If we didn't find the target, fail.
+	if !pp.found {
+		return Left, errors.New( fmt.Sprintf( "No target '%c' found reachable from %d,%d in map %s",
+			target, start.X, start.Y, _map.filename ))
+	}
+
+	// If we did find the target, start there, then walk down the
+	// gradient back to 1 step away from the start.
+	current := pp.goal_pos
+	cur_dist := pp.dist_from_start_map[ current.X + pp.size.X * current.Y ]
+	var walk_dir int
+	for cur_dist > 0 {
+		next_dist := cur_dist - 1
+		var motion IntPos
+		for walk_dir, motion = range( motions ) {
+			new_pos := current.Plus( motion )
+			if _map.PosValid( new_pos ) &&
+				pp.dist_from_start_map[ new_pos.X + pp.size.X * new_pos.Y ] == next_dist {
+		
+				current = new_pos
+				cur_dist = next_dist
+				break
+			}
+		}
+	}
+
+	if cur_dist != 0 {
+		return Left, errors.New( fmt.Sprintf( "Walking back, ended with cur_dist = %d instead of 0.", cur_dist ))
+	}
+
+	// Direction to go towards target is the opposite of the last
+	// direction we walked, since we walked from target back to
+	// start.
+	return Direction( (walk_dir + 2) % 4 ), nil
+}
