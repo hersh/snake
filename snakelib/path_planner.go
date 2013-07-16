@@ -12,9 +12,7 @@ type posAndDist struct {
 type PathPlanner struct {
 	size IntPos
 	dist_from_start_map []int
-	expansion_queue []posAndDist
-	expansion_queue_front int
-	expansion_queue_back int
+	expansion_queue chan posAndDist
 	goal_pos IntPos
 	found bool
 }
@@ -22,12 +20,13 @@ type PathPlanner struct {
 const NOT_VISITED int = -1
 
 func (pp *PathPlanner) queueIsEmpty() bool {
-	return pp.expansion_queue_front == pp.expansion_queue_back
+	return len( pp.expansion_queue ) == 0
 }
 
 func (pp *PathPlanner) clearQueue() {
-	pp.expansion_queue_front = 0
-	pp.expansion_queue_back = 0
+	for len( pp.expansion_queue ) > 0 {
+		<-pp.expansion_queue
+	}
 }
 
 func (pp *PathPlanner) pushPos( pos IntPos, dist int ) {
@@ -35,22 +34,11 @@ func (pp *PathPlanner) pushPos( pos IntPos, dist int ) {
 	pad.IntPos = pos
 	pad.dist = dist
 
-	pp.expansion_queue[ pp.expansion_queue_back ] = pad
-
-	pp.expansion_queue_back++
-	if pp.expansion_queue_back >= len( pp.expansion_queue ) {
-		pp.expansion_queue_back = 0
-	}
+	pp.expansion_queue <- pad
 }
 
 func (pp *PathPlanner) popPos() posAndDist {
-	result := pp.expansion_queue[ pp.expansion_queue_front ]
-
-	pp.expansion_queue_front++
-	if pp.expansion_queue_front >= len( pp.expansion_queue ) {
-		pp.expansion_queue_front = 0
-	}
-	return result
+	return <-pp.expansion_queue
 }
 
 func (pp *PathPlanner) fillDistanceMap( _map *Map, start IntPos, target rune ) {
@@ -60,7 +48,7 @@ func (pp *PathPlanner) fillDistanceMap( _map *Map, start IntPos, target rune ) {
 	if len( pp.dist_from_start_map ) != new_cell_count {
 		// make() returns a zeroed slice
 		pp.dist_from_start_map = make( []int, new_cell_count )
-		pp.expansion_queue = make( []posAndDist, new_cell_count / 2 )
+		pp.expansion_queue = make( chan posAndDist, new_cell_count / 2 )
 	}
 	// clear the dist map to NOT_VISITED in every cell
 	for i, _ := range( pp.dist_from_start_map ) {
