@@ -156,6 +156,11 @@ func (level *Level) Run() Result {
 			return Quit
 		}
 
+		level.apples_remaining = level._map.Count( '*' )
+		if level.apples_remaining == 0 {
+			return Win
+		}
+
 		if level.end_time.Sub( time.Now() ).Seconds() < 0 {
 			return Lose
 		}
@@ -177,10 +182,6 @@ func (level *Level) Run() Result {
 		case ch == '*':
 			level.game.AddScore( 5 )
 			snake.Grow( 5 )
-			level.apples_remaining = level._map.Count( '*' ) - 1
-			if level.apples_remaining == 0 {
-				return Win
-			}
 			stopped = false
 		default:
 			stopped = false
