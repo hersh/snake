@@ -109,3 +109,86 @@ func TestDirTowardsNearest2( t* testing.T ) {
 	}
 	
 }
+
+func TestDirTowardsNearestBig( t* testing.T ) {
+	mapstr := 
+`#############################################################################################################################################################
+#                                                                                                                                                           #
+# *                                                                                                                                                      *  #
+#                                                                                                                                                           #
+#   *                                                                                                                                                  *    #
+#                                                                                                                                                           #
+#                                                                                                                                                           #
+#                                                                                                                                                           #
+#                                                                                                                                                           #
+#                                                                                                                                                           #
+#                                                                                                                                                           #
+#                                                                                                                                                           #
+#                       #                                                                                                    #                              #
+#                       #                                                 *                                                  #                              #
+#                       #                                                                                                    #                              #
+#                       #                                                                                                    #                              #
+#                       #                                                                                                    #                              #
+#                       #                                                                                                    #                              #
+#                       #                                                                                                    #                              #
+#                       #               *                                                                   *                #                              #
+#                       #                                                  @                                                 #                              #
+#                       #            *                                                                         *             #                              #
+#                       #                                                                                                    #                              #
+#                       #         *                                                                              *           #                              #
+#                       #                                                                                                    #                              #
+#                       #       *                                                                                  *         #                              #
+#                       #                                                                                                    #                              #
+#           *           ################################################### ##################################################                *             #
+#                       #                                                                                                    #                              #
+#                       #       *                                                                                 *          #                              #
+#                       #                                                                                                    #                              #
+#                       #         *                                                                             *            #                              #
+#                       #                                                                                                    #                              #
+#                       #           *                                                                         *              #                              #
+#                       #                                                  &                                                 #                              #
+#                       #              *                                                                    *                #                              #
+#                       #                                                                                                    #                              #
+#                       #                                                                                                    #                              #
+#                       #                                                                                                    #                              #
+#                       #                                                                                                    #                              #
+#                       #                                                                                                    #                              #
+#                       #                                                                                                    #                              #
+#                       #                                                                                                    #                              #
+#                       #                                                                                                    #                              #
+#                       #                                                  *                                                 #                              #
+#                                                                                                                                                           #
+#                                                                                                                                                           #
+#                                                                                                                                                           #
+#                                                                                                                                                           #
+#                                                                                                                                                           #
+#                                                                                                                                                           #
+#                                                                                                                                                           #
+#                                                                                                                                                           #
+#    *                                                                                                                                                *     #
+#                                                                                                                                                           #
+#  *                                                                                                                                                    *   #
+#                                                                                                                                                           #
+#############################################################################################################################################################
+`
+
+	reader := strings.NewReader( mapstr )
+	scanner := bufio.NewScanner( reader )
+
+	_map, err := LoadNewMap( scanner, "test_map" )
+	if err != nil {
+		t.Errorf( "Failed to load test map: %v", err )
+	}
+
+	start, err := _map.Find( '&' )
+	if err != nil {
+		t.Errorf( "Failed to find '&': %v", err )
+	}
+
+	pp := new( PathPlanner )
+	dir, err := pp.DirTowardsNearest( _map, start, '*' )
+	if Down != dir {
+		t.Errorf( "Direction towards nearest should be Down (3), not %d.\n", int( dir ))
+	}
+	
+}

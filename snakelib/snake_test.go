@@ -10,7 +10,7 @@ func testPos( t* testing.T, message string, expected, actual IntPos ) {
 }
 
 func TestUpdate( t* testing.T ) {
-	s := NewSnake( IntPos{1, 1}, 4 )
+	s := NewSnake( IntPos{1, 1}, 4, '@' )
 	if s.head_dir != Right {
 		t.Errorf( "s.head_dir should default to Right, but is %d.\n", s.head_dir );
 	}
@@ -31,7 +31,7 @@ func TestUpdate( t* testing.T ) {
 }
 
 func TestTurn( t* testing.T ) {
-	s := NewSnake( IntPos{1, 1}, 4 )
+	s := NewSnake( IntPos{1, 1}, 4, '@' )
 	if int( Right ) != 0 {
 		t.Errorf( "Right should be 0, but is %d.\n", int( Right ))
 	}

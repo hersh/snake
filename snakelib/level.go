@@ -27,13 +27,14 @@ type Level struct {
 	end_time time.Time
 	game *Game
 	player_snake *Snake
+	enemy_snake *EnemySnake
 	apples_remaining int
 }
 
 func NewLevel( game *Game ) *Level {
 	var l Level
 	l.game = game
-	l.player_snake = NewSnake( IntPos{ 10, 10 }, 30 )
+	l.player_snake = NewSnake( IntPos{ 10, 10 }, 30, '@' )
 	l.allowed_duration = 100 * time.Second
 	l.end_time = time.Now().Add( l.allowed_duration )
 	width := 80
@@ -106,12 +107,22 @@ func LoadNewLevel( game *Game, filename string ) (*Level, error) {
 	if err != nil {
 		return nil, err
 	}
-	l.player_snake = NewSnake( snake_start, snake_len )
+	l.player_snake = NewSnake( snake_start, snake_len, '@' )
+
+	enemy_start, err := l._map.Find( '&' )
+	if err != nil {
+		return nil, err
+	}
+	enemy_len, err := strconv.Atoi( values[ "enemy len" ])
+	if err != nil {
+		return nil, err
+	}
+	l.enemy_snake = NewEnemySnake( enemy_start, enemy_len, '&' )
 	return &l, nil
 }
 
 func isStopper( r rune ) bool {
-	return r == '#' || r == '@'
+	return r != ' ' && r != '*'
 }
 
 func (level *Level) Run() Result {
@@ -178,6 +189,9 @@ func (level *Level) Run() Result {
 		if !stopped {
 			snake.Advance( level._map )
 		}
+		
+		level.enemy_snake.Update( level._map )
+
 		level._map.DrawCentered( snake.HeadPos() )
 		level.game.DrawState()
 		level.DrawState()

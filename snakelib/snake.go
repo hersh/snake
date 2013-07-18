@@ -64,14 +64,16 @@ var motions = [...]IntPos { {1, 0}, {0, -1}, {-1, 0}, {0, 1} }
 type Snake struct {
 	body []IntPos
 	head_dir Direction
+	body_char rune
 }
 
-func NewSnake( pos IntPos, length int ) *Snake {
+func NewSnake( pos IntPos, length int, body_char rune ) *Snake {
 	var s Snake
 	s.body = make( []IntPos, length )
 	for i := range( s.body ) {
 		s.body[ i ] = pos
 	}
+	s.body_char = body_char
 	return &s
 }
 
@@ -93,7 +95,7 @@ func (s *Snake) Advance( m *Map ) {
 		s.body[ i - 1 ] = s.body[ i ]
 	}
 	s.body[ i-1 ] = new_pos
-	m.SetCell( new_pos, '@' )
+	m.SetCell( new_pos, s.body_char )
 }
 
 func (s *Snake) Grow( length_change int ) {

@@ -5,17 +5,28 @@ import (
 )
 
 type EnemySnake struct {
-	Snake
-	PathPlanner
+	*Snake
+	*PathPlanner
 }
 
-func (es *EnemySnake) update( _map *Map ) {
+func NewEnemySnake( start IntPos, length int, body_char rune ) *EnemySnake {
+	var es EnemySnake
+	es.Snake = NewSnake( start, length, body_char )
+	es.PathPlanner = new( PathPlanner )
+	return &es
+}
+
+func (es *EnemySnake) Update( _map *Map ) {
 
 	new_dir, err := es.DirTowardsNearest( _map, es.HeadPos(), '*' )
+
 	if err == nil {
 		es.SetDir( new_dir )
 	} else {
 		es.Turn( rand.Intn( 3 ) - 1) // turn left, go straight, or turn right randomly
 	}
-	es.Advance( _map )
+	ch := _map.GetCell( es.NextPos() )
+	if !isStopper( ch ) {
+		es.Advance( _map )
+	}
 }
