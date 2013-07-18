@@ -36,6 +36,8 @@ func (pp *PathPlanner) pushPos( pos IntPos, dist int ) {
 	pad.dist = dist
 
 	pp.expansion_queue <- pad
+
+	pp.dist_from_start_map[ pos.X + pp.size.X * pos.Y ] = dist
 }
 
 func (pp *PathPlanner) popPos() posAndDist {
@@ -49,7 +51,7 @@ func (pp *PathPlanner) fillDistanceMap( _map *Map, start IntPos, target rune ) {
 	if len( pp.dist_from_start_map ) != new_cell_count {
 		// make() returns a zeroed slice
 		pp.dist_from_start_map = make( []int, new_cell_count )
-		pp.expansion_queue = make( chan posAndDist, new_cell_count * 4 )
+		pp.expansion_queue = make( chan posAndDist, new_cell_count / 2 )
 	}
 	// clear the dist map to NOT_VISITED in every cell
 	for i, _ := range( pp.dist_from_start_map ) {
@@ -63,13 +65,6 @@ func (pp *PathPlanner) fillDistanceMap( _map *Map, start IntPos, target rune ) {
 	pp.found = false
 	for !pp.found && !pp.queueIsEmpty() {
 		current := pp.popPos()
-		dist_index := current.X + pp.size.X * current.Y
-		map_char := _map.GetCell( current.IntPos )
-		if map_char == target {
-			pp.found = true
-			pp.goal_pos = current.IntPos
-		}
-		pp.dist_from_start_map[ dist_index ] = current.dist
 		new_dist := current.dist + 1
 		for _, motion := range( motions ) {
 			new_pos := current.IntPos.Plus( motion )
@@ -79,6 +74,11 @@ func (pp *PathPlanner) fillDistanceMap( _map *Map, start IntPos, target rune ) {
 					pp.dist_from_start_map[ new_pos.Y * pp.size.X + new_pos.X ] == NOT_VISITED {
 
 					pp.pushPos( new_pos, new_dist )
+
+					if _map.GetCell( new_pos ) == target {
+						pp.found = true
+						pp.goal_pos = new_pos
+					}
 				}
 			}
 		}	
