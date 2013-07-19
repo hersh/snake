@@ -165,30 +165,19 @@ func (level *Level) Run() Result {
 			return Lose
 		}
 
-		ch := level._map.GetCell( snake.NextPos() )
-		switch {
-		case isStopper( ch ):
+		switch snake.Update( level._map ) {
+		case AteApple:
+			level.game.AddScore(5)
+			stopped = false
+		case Collided:
 			if !stopped {
-				level.game.AddScore( -10 )
 				stopped = true
-				if isStopper( level._map.GetCell( snake.HeadPos().PlusDir( Down, 1 ))) &&
-					isStopper( level._map.GetCell( snake.HeadPos().PlusDir( Up, 1 ))) &&
-					isStopper( level._map.GetCell( snake.HeadPos().PlusDir( Left, 1 ))) &&
-					isStopper( level._map.GetCell( snake.HeadPos().PlusDir( Right, 1 ))) {
-
-					return Lose
-				}
+				level.game.AddScore(-10)
 			}
-		case ch == '*':
-			level.game.AddScore( 5 )
-			snake.Grow( 5 )
+		case Trapped:
+			return Lose
+		case Normal:
 			stopped = false
-		default:
-			stopped = false
-		}
-
-		if !stopped {
-			snake.Advance( level._map )
 		}
 		
 		level.enemy_snake.Update( level._map )

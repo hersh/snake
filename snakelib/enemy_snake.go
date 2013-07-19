@@ -25,8 +25,6 @@ func (es *EnemySnake) Update( _map *Map ) {
 	} else {
 		es.Turn( rand.Intn( 3 ) - 1) // turn left, go straight, or turn right randomly
 	}
-	ch := _map.GetCell( es.NextPos() )
-	if !isStopper( ch ) {
-		es.Advance( _map )
-	}
+
+	es.Snake.Update( _map )
 }
