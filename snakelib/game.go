@@ -1,74 +1,81 @@
 package snakelib
 
 import (
-	"github.com/nsf/termbox-go"
 	"fmt"
+	"github.com/nsf/termbox-go"
 	"path/filepath"
 	"sort"
 	"time"
 )
 
 type Game struct {
-        dir string
+	dir                      string
 	current_level_num, score int
-	current_level *Level
-	level_files []string
+	current_level            *Level
+	level_files              []string
 }
 
-func LoadNewGame( game_dir string ) *Game {
+func LoadNewGame(game_dir string) *Game {
 	var game Game
 	game.dir = game_dir
 	game.current_level_num = 0
 	game.score = 0
 
 	var err error
-	game.level_files, err = filepath.Glob( filepath.Join( game.dir, "*.snake" ))
-	if( err != nil ) {
-		panic( err )
+	game.level_files, err = filepath.Glob(filepath.Join(game.dir, "*.snake"))
+	if err != nil {
+		panic(err)
 	}
-	if( len( game.level_files ) == 0 ) {
-		panic( fmt.Sprintf( "Could not find any '*.snake' files in game dir '%s'", game.dir ))
+	if len(game.level_files) == 0 {
+		panic(fmt.Sprintf("Could not find any '*.snake' files in game dir '%s'", game.dir))
 	}
-	sort.Strings( game.level_files )
+	sort.Strings(game.level_files)
 
 	return &game
 }
 
-func (g *Game) AddScore( amount int ) {
+func (g *Game) AddScore(amount int) {
 	g.score += amount
 }
 
 func (g *Game) DrawState() {
-	state := fmt.Sprintf( "Score: %d, Level %d", g.score, 1 + g.current_level_num )
-	DrawString( 0, 0, state )
+	state := fmt.Sprintf("Score: %d, Level %d", g.score, 1+g.current_level_num)
+	DrawString(0, 0, state)
 }
 
-func DrawString( x, y int, str string ) {
-	runes := []rune( str )
-	for i := 0; i < len( runes ); i++ {
-		termbox.SetCell( x + i, y, runes[ i ], termbox.ColorWhite, termbox.ColorBlack )
+func DrawString(x, y int, str string) {
+	runes := []rune(str)
+	for i := 0; i < len(runes); i++ {
+		termbox.SetCell(x+i, y, runes[i], termbox.ColorWhite, termbox.ColorBlack)
 	}
 }
 
-func DrawCentered( x, y int, str string ) {
-	DrawString( x - len( str ) / 2, y, str )
+func DrawCentered(x, y int, str string) {
+	DrawString(x-len(str)/2, y, str)
 }
 
 func ShowIntroScreen() Result {
 	width, height := termbox.Size()
 	x := width / 2
-	y := height / 2 - 5
-	DrawCentered( x, y, "Welcome to GoSnake!" )
+	y := height/2 - 5
+	DrawCentered(x, y, "Welcome to GoSnake!")
 	y++
-	DrawCentered( x, y, "    I    " ); y++
-	DrawCentered( x, y, "    ^    " ); y++
-	DrawCentered( x, y, "J <   > L" ); y++
-	DrawCentered( x, y, "    v    " ); y++
-	DrawCentered( x, y, "    K    " ); y++
+	DrawCentered(x, y, "    I    ")
 	y++
-	DrawCentered( x, y, "Press Q to quit," ); y++
+	DrawCentered(x, y, "    ^    ")
 	y++
-	DrawCentered( x, y, "Any other key to start." ); y++
+	DrawCentered(x, y, "J <   > L")
+	y++
+	DrawCentered(x, y, "    v    ")
+	y++
+	DrawCentered(x, y, "    K    ")
+	y++
+	y++
+	DrawCentered(x, y, "Press Q to quit,")
+	y++
+	y++
+	DrawCentered(x, y, "Any other key to start.")
+	y++
 
 	if termbox.Flush() != nil {
 		return Quit
@@ -83,7 +90,7 @@ func ShowIntroScreen() Result {
 				return Start
 			}
 		}
-		time.Sleep( time.Millisecond * 100 )
+		time.Sleep(time.Millisecond * 100)
 	}
 	return Start
 }
@@ -93,7 +100,7 @@ func (game *Game) ShowWinScreen() {
 	x := width / 2
 	y := height / 2
 
-	DrawCentered( x, y, "You win!" )
+	DrawCentered(x, y, "You win!")
 
 	if termbox.Flush() != nil {
 		return
@@ -103,31 +110,31 @@ func (game *Game) ShowWinScreen() {
 		if event.Type == termbox.EventKey {
 			return
 		}
-		time.Sleep( time.Millisecond * 100 )
+		time.Sleep(time.Millisecond * 100)
 	}
 }
 
 func (game *Game) Run() {
 	err := termbox.Init()
 	if err != nil {
-		panic( err )
+		panic(err)
 	}
 	defer termbox.Close()
 
-	for ; ShowIntroScreen() == Start; {
+	for ShowIntroScreen() == Start {
 		game.current_level_num = 0
 		playing := true
-		for ; playing; {
+		for playing {
 			var err error
-			game.current_level, err = LoadNewLevel( game, game.level_files[ game.current_level_num ])
+			game.current_level, err = LoadNewLevel(game, game.level_files[game.current_level_num])
 			if err != nil {
-				panic( err )
+				panic(err)
 			}
 			// game.current_level = NewLevel( game )
 			switch game.current_level.Run() {
 			case Win:
 				game.current_level_num++
-				if game.current_level_num >= len( game.level_files ) {
+				if game.current_level_num >= len(game.level_files) {
 					game.ShowWinScreen()
 					playing = false
 				}
@@ -141,4 +148,3 @@ func (game *Game) Run() {
 		//     return
 	}
 }
-
